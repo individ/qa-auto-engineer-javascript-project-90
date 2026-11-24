@@ -29,7 +29,7 @@ npx playwright install chromium
 Проверка стиля: `npm run lint`. Сборка: `npm run build`.
 
 Запуск тестов: `npm test`. Playwright автоматически запускает приложение.
-На этапе настройки каталог `tests` пуст — тесты добавляются на следующих шагах.
+Базовый тест проверяет отображение полей имени пользователя, пароля и кнопки входа.
 
 При установленном GNU Make доступны `make install`, `make start`, `make test` и `make lint`.
 
