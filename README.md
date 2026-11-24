@@ -13,16 +13,25 @@
 
 ## Установка
 
-<!-- Опишите установку: клонирование, зависимости, переменные окружения -->
+Требуется Node.js 22.12+ или 24+ и npm.
 
 ```bash
 git clone https://github.com/individ/qa-auto-engineer-javascript-project-90.git
 cd qa-auto-engineer-javascript-project-90
+npm ci
+npx playwright install chromium
 ```
 
 ## Использование
 
-<!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
+Запуск приложения: `npm run dev` (http://localhost:5173).
+
+Проверка стиля: `npm run lint`. Сборка: `npm run build`.
+
+Запуск тестов: `npm test`. Playwright автоматически запускает приложение.
+На этапе настройки каталог `tests` пуст — тесты добавляются на следующих шагах.
+
+При установленном GNU Make доступны `make install`, `make start`, `make test` и `make lint`.
 
 ---
 
@@ -36,3 +45,6 @@ cd qa-auto-engineer-javascript-project-90
 ## О Хекслете
 
 [Хекслет](https://ru.hexlet.io/) — школа программирования: авторские программы обучения с практикой, поддержкой наставников и реальными проектами, которые остаются в резюме. Этот репозиторий — один из таких проектов.
+
+
+React и ReactDOM используют версию 18, совместимую с учебным приложением.
