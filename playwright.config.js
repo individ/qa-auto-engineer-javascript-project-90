@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const appBaseURL = process.env.APP_BASE_URL
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -8,13 +10,13 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: appBaseURL || 'http://localhost:5173',
     trace: 'on-first-retry',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
-  webServer: {
+  webServer: appBaseURL ? undefined : {
     command: 'npm run dev -- --host localhost --port 5173 --strictPort',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
