@@ -1,10 +1,17 @@
 export default class UsersPage {
   constructor(page) {
     this.page = page
+    this.rows = page.getByRole('row')
+    this.table = page.getByRole('table')
+    this.createLink = page.getByRole('link', { name: 'Create', exact: true })
     this.email = page.getByRole('textbox', { name: 'Email' })
     this.firstName = page.getByRole('textbox', { name: 'First name' })
     this.lastName = page.getByRole('textbox', { name: 'Last name' })
     this.save = page.getByRole('button', { name: 'Save', exact: true })
+  }
+
+  async saveChanges() {
+    await this.save.click()
   }
 
   async open() {
@@ -16,13 +23,17 @@ export default class UsersPage {
   }
 
   async openCreate() {
-    await this.page.getByRole('link', { name: 'Create', exact: true }).click()
+    await this.createLink.click()
   }
 
   async fill(user) {
     await this.email.fill(user.email)
     await this.firstName.fill(user.firstName)
     await this.lastName.fill(user.lastName)
+  }
+
+  async fillField(field, value) {
+    await this[field].fill(value)
   }
 
   async edit(email) {

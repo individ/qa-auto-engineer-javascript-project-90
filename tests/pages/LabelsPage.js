@@ -1,8 +1,15 @@
 export default class LabelsPage {
   constructor(page) {
     this.page = page
+    this.rows = page.getByRole('row')
+    this.table = page.getByRole('table')
+    this.createLink = page.getByRole('link', { name: 'Create', exact: true })
     this.name = page.getByRole('textbox', { name: 'Name', exact: true })
     this.save = page.getByRole('button', { name: 'Save', exact: true })
+  }
+
+  async saveChanges() {
+    await this.save.click()
   }
 
   async open() {
@@ -14,7 +21,11 @@ export default class LabelsPage {
   }
 
   async openCreate() {
-    await this.page.getByRole('link', { name: 'Create', exact: true }).click()
+    await this.createLink.click()
+  }
+
+  async fill(name) {
+    await this.name.fill(name)
   }
 
   async edit(name) {

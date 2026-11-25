@@ -7,6 +7,30 @@ export default class TasksPage {
     this.cards = page.locator('[data-rfd-draggable-id]')
   }
 
+  field(name) {
+    return this.page.getByRole('combobox', { name: new RegExp('^' + name + '( |$)') })
+  }
+
+  async openCreate() {
+    await this.page.getByRole('link', { name: 'Create', exact: true }).click()
+  }
+
+  async saveChanges() {
+    await this.save.click()
+  }
+
+  async deleteCurrent() {
+    await this.page.getByRole('button', { name: 'Delete', exact: true }).click()
+  }
+
+  async moveRight(title) {
+    const card = this.card(title)
+    // Доска поддерживает перенос карточек с клавиатуры.
+    await card.press('Space')
+    await card.press('ArrowRight')
+    await card.press('Space')
+  }
+
   async open() {
     await this.page.getByRole('menuitem', { name: 'Tasks', exact: true }).click()
   }
@@ -20,7 +44,7 @@ export default class TasksPage {
   }
 
   async choose(field, value) {
-    await this.page.getByRole('combobox', { name: new RegExp('^' + field + '( |$)') }).click()
+    await this.field(field).click()
     await this.page.getByRole('option', { name: value, exact: true }).click()
     await this.page.keyboard.press('Escape')
   }
@@ -30,7 +54,7 @@ export default class TasksPage {
     await this.content.fill(task.content)
     await this.choose('Assignee', task.assignee)
     await this.choose('Status', task.status)
-    await this.page.getByRole('combobox', { name: /^Label( |$)/ }).click()
+    await this.field('Label').click()
     for (const option of await this.page.getByRole('option', { selected: true }).all()) {
       await option.click()
     }
@@ -39,9 +63,9 @@ export default class TasksPage {
   }
 
   async create(task) {
-    await this.page.getByRole('link', { name: 'Create', exact: true }).click()
+    await this.openCreate()
     await this.fill(task)
-    await this.save.click()
+    await this.saveChanges()
     await this.open()
   }
 

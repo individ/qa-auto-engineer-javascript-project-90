@@ -6,6 +6,10 @@ export default class LoginPage {
     this.signIn = page.getByRole('button', { name: 'Sign in', exact: true })
   }
 
+  async openHome() {
+    await this.page.goto('/')
+  }
+
   async open() {
     await this.page.goto('/#/login')
   }

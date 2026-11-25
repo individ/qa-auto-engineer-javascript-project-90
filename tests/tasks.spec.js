@@ -1,6 +1,4 @@
-import { test, expect } from '@playwright/test'
-import LoginPage from './pages/LoginPage.js'
-import TasksPage from './pages/TasksPage.js'
+import { test, expect } from './fixtures.js'
 
 const task = {
   title: 'Check registration',
@@ -18,15 +16,7 @@ const columns = {
   'Published': [4, 15, 10],
 }
 
-test.beforeEach(async ({ page }) => {
-  const login = new LoginPage(page)
-  await login.open()
-  await login.login('tester', 'password123')
-  await new TasksPage(page).open()
-})
-
-test('доска показывает задачи в соответствующих колонках', async ({ page }) => {
-  const tasks = new TasksPage(page)
+test('доска показывает задачи в соответствующих колонках', async ({ tasks }) => {
   await expect(tasks.cards).toHaveCount(15)
   for (const [status, ids] of Object.entries(columns)) {
     const column = tasks.column(status)
@@ -38,16 +28,15 @@ test('доска показывает задачи в соответствующ
   }
 })
 
-test('создание задачи сохраняет все поля', async ({ page }) => {
-  const tasks = new TasksPage(page)
-  await page.getByRole('link', { name: 'Create', exact: true }).click()
+test('создание задачи сохраняет все поля', async ({ tasks }) => {
+  await tasks.openCreate()
   await expect(tasks.title).toBeVisible()
   await expect(tasks.content).toBeVisible()
   for (const name of ['Assignee', 'Status', 'Label']) {
-    await expect(page.getByRole('combobox', { name, exact: true })).toBeVisible()
+    await expect(tasks.field(name)).toBeVisible()
   }
   await tasks.fill(task)
-  await tasks.save.click()
+  await tasks.saveChanges()
   await tasks.open()
   await expect(tasks.column(task.status).getByText(task.title, { exact: true })).toBeVisible()
   await expect(tasks.card(task.title)).toContainText(task.content)
@@ -55,12 +44,11 @@ test('создание задачи сохраняет все поля', async (
   await expect(tasks.title).toHaveValue(task.title)
   await expect(tasks.content).toHaveValue(task.content)
   for (const [field, value] of [['Assignee', task.assignee], ['Status', task.status], ['Label', task.label]]) {
-    await expect(page.getByRole('combobox', { name: new RegExp('^' + field + '( |$)') })).toContainText(value)
+    await expect(tasks.field(field)).toContainText(value)
   }
 })
 
-test('редактирование меняет данные и колонку задачи', async ({ page }) => {
-  const tasks = new TasksPage(page)
+test('редактирование меняет данные и колонку задачи', async ({ tasks }) => {
   await tasks.create(task)
   await tasks.edit(task.title)
   const updated = {
@@ -71,7 +59,7 @@ test('редактирование меняет данные и колонку �
     label: 'feature',
   }
   await tasks.fill(updated)
-  await tasks.save.click()
+  await tasks.saveChanges()
   await tasks.open()
   await expect(tasks.card(task.title)).toHaveCount(0)
   await expect(tasks.column(updated.status).getByText(updated.title, { exact: true })).toBeVisible()
@@ -79,15 +67,14 @@ test('редактирование меняет данные и колонку �
   await expect(tasks.title).toHaveValue(updated.title)
   await expect(tasks.content).toHaveValue(updated.content)
   for (const [field, value] of [['Assignee', updated.assignee], ['Status', updated.status], ['Label', updated.label]]) {
-    await expect(page.getByRole('combobox', { name: new RegExp('^' + field + '( |$)') })).toContainText(value)
+    await expect(tasks.field(field)).toContainText(value)
   }
 })
 
-test('удаление задачи оставляет остальные карточки', async ({ page }) => {
-  const tasks = new TasksPage(page)
+test('удаление задачи оставляет остальные карточки', async ({ tasks }) => {
   await tasks.create(task)
   await tasks.edit(task.title)
-  await page.getByRole('button', { name: 'Delete', exact: true }).click()
+  await tasks.deleteCurrent()
   await tasks.open()
   await expect(tasks.card(task.title)).toHaveCount(0)
   await expect(tasks.cards).toHaveCount(15)
@@ -97,8 +84,7 @@ test('удаление задачи оставляет остальные кар
 })
 
 for (const [field, value] of [['Assignee', task.assignee], ['Status', task.status], ['Label', task.label]]) {
-  test(`фильтр ${field} оставляет подходящие задачи`, async ({ page }) => {
-    const tasks = new TasksPage(page)
+  test(`фильтр ${field} оставляет подходящие задачи`, async ({ tasks }) => {
     await tasks.create(task)
     const other = {
       title: 'Prepare release',
@@ -115,16 +101,11 @@ for (const [field, value] of [['Assignee', task.assignee], ['Status', task.statu
   })
 }
 
-test('перенос карточки в соседнюю колонку сохраняет статус', async ({ page }) => {
-  const tasks = new TasksPage(page)
-  const card = tasks.card('Task 11')
+test('перенос карточки в соседнюю колонку сохраняет статус', async ({ tasks }) => {
   await expect(tasks.column('Draft').getByText('Task 11', { exact: true })).toBeVisible()
-  // Перенос с клавиатуры поддерживается самой канбан-доской.
-  await card.press('Space')
-  await card.press('ArrowRight')
-  await card.press('Space')
+  await tasks.moveRight('Task 11')
   await expect(tasks.column('To Review').getByText('Task 11', { exact: true })).toBeVisible()
   await expect(tasks.column('Draft').getByText('Task 11', { exact: true })).toHaveCount(0)
   await tasks.edit('Task 11')
-  await expect(page.getByRole('combobox', { name: /^Status( |$)/ })).toContainText('To Review')
+  await expect(tasks.field('Status')).toContainText('To Review')
 })
